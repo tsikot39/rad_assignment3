@@ -18,7 +18,6 @@ namespace rad_assignment3
         {
             InitializeComponent();
             LoadPlayers();
-            lblPlayerDetails.Text = "";
         }
 
         private void LoadPlayers()
@@ -99,18 +98,140 @@ namespace rad_assignment3
         {
             if (listBoxPlayers.SelectedItem is Player selectedPlayer)
             {
-                // Display player details
-                lblPlayerDetails.Text = $"{selectedPlayer.Name} - {selectedPlayer.Team}\n" +
-                                        $"Position: {selectedPlayer.Position}\n" +
-                                        $"Points: {selectedPlayer.PointsPerGame:F1}\n" +
-                                        $"Assists: {selectedPlayer.AssistsPerGame:F1}\n" +
-                                        $"Rebounds: {selectedPlayer.ReboundsPerGame:F1}\n" +
-                                        $"Steals: {selectedPlayer.StealsPerGame:F1}";
+                // Populate input fields
+                txtName.Text = selectedPlayer.Name;
+                txtTeam.Text = selectedPlayer.Team;
+                txtPosition.Text = selectedPlayer.Position;
+                numPoints.Value = (decimal)selectedPlayer.PointsPerGame;
+                numAssists.Value = (decimal)selectedPlayer.AssistsPerGame;
+                numRebounds.Value = (decimal)selectedPlayer.ReboundsPerGame;
+                numSteals.Value = (decimal)selectedPlayer.StealsPerGame;
+                txtPhotoPath.Text = selectedPlayer.PhotoPath; // Load the photo path
+
+                // Display photo in PictureBox
+                if (!string.IsNullOrEmpty(selectedPlayer.PhotoPath) && System.IO.File.Exists(selectedPlayer.PhotoPath))
+                {
+                    pictureBoxPlayerPhoto.Image = Image.FromFile(selectedPlayer.PhotoPath);
+                }
+                else
+                {
+                    pictureBoxPlayerPhoto.Image = null; // Clear the PictureBox if no photo
+                }
             }
             else
             {
-                // Clear player details if no player is selected
-                lblPlayerDetails.Text = string.Empty;
+                // Clear input fields and photo
+                ClearInputFields();
+                pictureBoxPlayerPhoto.Image = null;
+            }
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            if (listBoxPlayers.SelectedItem is Player selectedPlayer)
+            {
+                // Update selected player details
+                selectedPlayer.Name = txtName.Text;
+                selectedPlayer.Team = txtTeam.Text;
+                selectedPlayer.Position = txtPosition.Text;
+                selectedPlayer.PointsPerGame = (double)numPoints.Value;
+                selectedPlayer.AssistsPerGame = (double)numAssists.Value;
+                selectedPlayer.ReboundsPerGame = (double)numRebounds.Value;
+                selectedPlayer.StealsPerGame = (double)numSteals.Value;
+                selectedPlayer.PhotoPath = txtPhotoPath.Text; // Update photo path
+
+                MessageBox.Show("Player updated successfully!");
+
+                // Refresh the player list
+                DisplayPlayers(selectedPlayer.Team);
+                ClearInputFields();
+            }
+            else
+            {
+                MessageBox.Show("Please select a player to update.");
+            }
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtName.Text) || string.IsNullOrWhiteSpace(txtTeam.Text) ||
+                string.IsNullOrWhiteSpace(txtPosition.Text))
+            {
+                MessageBox.Show("Please fill in all required fields.");
+                return;
+            }
+
+            // Create and add new player
+            var newPlayer = new Player(
+                txtName.Text,
+                txtTeam.Text,
+                txtPosition.Text,
+                (double)numPoints.Value,
+                (double)numAssists.Value,
+                (double)numRebounds.Value,
+                (double)numSteals.Value,
+                "Custom", // Default card color
+                txtPhotoPath.Text // Save the photo path
+            );
+
+            players.Add(newPlayer);
+            MessageBox.Show("Player added successfully!");
+
+            // Refresh player list and clear fields
+            DisplayPlayers(txtTeam.Text);
+            ClearInputFields();
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (listBoxPlayers.SelectedItem is Player selectedPlayer)
+            {
+                // Confirm deletion
+                var confirmResult = MessageBox.Show(
+                    $"Are you sure you want to delete {selectedPlayer.Name}?",
+                    "Confirm Delete",
+                    MessageBoxButtons.YesNo
+                );
+
+                if (confirmResult == DialogResult.Yes)
+                {
+                    players.Remove(selectedPlayer);
+                    MessageBox.Show("Player deleted successfully!");
+
+                    // Refresh the player list
+                    DisplayPlayers(selectedPlayer.Team);
+                    ClearInputFields();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a player to delete.");
+            }
+        }
+
+        private void ClearInputFields()
+        {
+            txtName.Clear();
+            txtTeam.Clear();
+            txtPosition.Clear();
+            numPoints.Value = 0;
+            numAssists.Value = 0;
+            numRebounds.Value = 0;
+            numSteals.Value = 0;
+            txtPhotoPath.Clear();
+            pictureBoxPlayerPhoto.Image = null;
+        }
+
+        private void btnSelectPhoto_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    pictureBoxPlayerPhoto.Image = Image.FromFile(openFileDialog.FileName);
+                    txtPhotoPath.Text = openFileDialog.FileName; // Save the path to a hidden TextBox or variable
+                }
             }
         }
     }

@@ -13,7 +13,9 @@ namespace rad_assignment3
         public double StealsPerGame { get; set; }
         public string CardColor { get; set; }
 
-        public Player(string name, string team, string position, double points, double assists, double rebounds, double steals, string cardColor)
+        public string PhotoPath { get; set; }
+
+        public Player(string name, string team, string position, double points, double assists, double rebounds, double steals, string cardColor, string photoPath = "")
         {
             Name = name;
             Team = team;
@@ -23,6 +25,7 @@ namespace rad_assignment3
             ReboundsPerGame = rebounds;
             StealsPerGame = steals;
             CardColor = cardColor;
+            PhotoPath = photoPath;
         }
     }
 }
