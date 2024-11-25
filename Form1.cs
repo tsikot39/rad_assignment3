@@ -14,6 +14,8 @@ namespace rad_assignment3
     {
 
         private List<Player> players;
+        private bool isAddingNewPlayer = false;
+
         public Form1()
         {
             InitializeComponent();
@@ -96,6 +98,8 @@ namespace rad_assignment3
 
         private void listBoxPlayers_SelectedIndexChanged(object sender, EventArgs e)
         {
+            isAddingNewPlayer = false; // Cancel add mode when selecting an existing player
+
             if (listBoxPlayers.SelectedItem is Player selectedPlayer)
             {
                 // Populate input fields
@@ -115,7 +119,7 @@ namespace rad_assignment3
                 }
                 else
                 {
-                    pictureBoxPlayerPhoto.Image = null; // Clear the PictureBox if no photo
+                    pictureBoxPlayerPhoto.Image = null; // Clear PictureBox if no photo
                 }
             }
             else
@@ -126,33 +130,8 @@ namespace rad_assignment3
             }
         }
 
+
         private void btnEdit_Click(object sender, EventArgs e)
-        {
-            if (listBoxPlayers.SelectedItem is Player selectedPlayer)
-            {
-                // Update selected player details
-                selectedPlayer.Name = txtName.Text;
-                selectedPlayer.Team = txtTeam.Text;
-                selectedPlayer.Position = txtPosition.Text;
-                selectedPlayer.PointsPerGame = (double)numPoints.Value;
-                selectedPlayer.AssistsPerGame = (double)numAssists.Value;
-                selectedPlayer.ReboundsPerGame = (double)numRebounds.Value;
-                selectedPlayer.StealsPerGame = (double)numSteals.Value;
-                selectedPlayer.PhotoPath = txtPhotoPath.Text; // Update photo path
-
-                MessageBox.Show("Player updated successfully!");
-
-                // Refresh the player list
-                DisplayPlayers(selectedPlayer.Team);
-                ClearInputFields();
-            }
-            else
-            {
-                MessageBox.Show("Please select a player to update.");
-            }
-        }
-
-        private void btnAdd_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtName.Text) || string.IsNullOrWhiteSpace(txtTeam.Text) ||
                 string.IsNullOrWhiteSpace(txtPosition.Text))
@@ -161,25 +140,61 @@ namespace rad_assignment3
                 return;
             }
 
-            // Create and add new player
-            var newPlayer = new Player(
-                txtName.Text,
-                txtTeam.Text,
-                txtPosition.Text,
-                (double)numPoints.Value,
-                (double)numAssists.Value,
-                (double)numRebounds.Value,
-                (double)numSteals.Value,
-                "Custom", // Default card color
-                txtPhotoPath.Text // Save the photo path
-            );
+            if (isAddingNewPlayer)
+            {
+                // Add new player
+                var newPlayer = new Player(
+                    txtName.Text,
+                    txtTeam.Text,
+                    txtPosition.Text,
+                    (double)numPoints.Value,
+                    (double)numAssists.Value,
+                    (double)numRebounds.Value,
+                    (double)numSteals.Value,
+                    "Custom", // Default card color
+                    txtPhotoPath.Text // Save the photo path
+                );
 
-            players.Add(newPlayer);
-            MessageBox.Show("Player added successfully!");
+                players.Add(newPlayer);
+                MessageBox.Show("Player added successfully!");
 
-            // Refresh player list and clear fields
-            DisplayPlayers(txtTeam.Text);
-            ClearInputFields();
+                // Refresh player list and reset flag
+                DisplayPlayers(txtTeam.Text);
+                isAddingNewPlayer = false; // Reset flag
+            }
+            else
+            {
+                // Edit existing player
+                if (listBoxPlayers.SelectedItem is Player selectedPlayer)
+                {
+                    selectedPlayer.Name = txtName.Text;
+                    selectedPlayer.Team = txtTeam.Text;
+                    selectedPlayer.Position = txtPosition.Text;
+                    selectedPlayer.PointsPerGame = (double)numPoints.Value;
+                    selectedPlayer.AssistsPerGame = (double)numAssists.Value;
+                    selectedPlayer.ReboundsPerGame = (double)numRebounds.Value;
+                    selectedPlayer.StealsPerGame = (double)numSteals.Value;
+                    selectedPlayer.PhotoPath = txtPhotoPath.Text; // Update photo path
+
+                    MessageBox.Show("Player updated successfully!");
+
+                    // Refresh player list
+                    DisplayPlayers(selectedPlayer.Team);
+                }
+                else
+                {
+                    MessageBox.Show("Please select a player to update.");
+                }
+            }
+
+            ClearInputFields(); // Clear fields after saving
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            isAddingNewPlayer = true; // Set flag for adding mode
+            ClearInputFields();       // Clear all input fields
+            txtName.Focus();          // Focus on the Name field
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
